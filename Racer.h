@@ -23,9 +23,11 @@ private:
 	color color;
 	int   size;
 	bool  alive;
+	bool  finished;
+	SDL_Plotter* screen;
 
 public:
-	Racer();
+	Racer(SDL_Plotter* g);
 	Racer(const Racer&);
 	Racer operator=(const Racer&);
 
@@ -33,13 +35,36 @@ public:
 	void   move(int direction);
 	void   draw(SDL_Plotter& g);
 	void   erase(SDL_Plotter& g);
-	Uint32 look(DIRECTION direction, SDL_Plotter& g);
+	bool   look(DIRECTION direction);
+
 	point  getLocation(){return location;}
 	point  getPrevLocation(){return prevLocation;}
 
+	bool Finished(){return finished;}
+	void die(){alive = false;}
+
+	void  setFinished(bool f){finished = f;}
+	void  setLocation(point p){location = p;}
+	void  setPrevLocation(point p){prevLocation = p;}
+	void  setAlive(bool f){alive = f;}
+
+
+	virtual void run(){
+		//do nothing
+	}
+
+	virtual void run(SDL_Plotter& g){
+		//do nothing
+	}
+
 };
 
-Racer::Racer(): location(point(0,0)), size(block-padding), alive{true}{}
+Racer::Racer(SDL_Plotter* g): location(point(0,0)),
+		                      prevLocation(point(0,0)),
+							  size(block-padding),
+							  alive{true},
+							  finished{false},
+							  screen{g}{}
 
 void Racer::move(int direction){
 	prevLocation = location;
@@ -48,6 +73,9 @@ void Racer::move(int direction){
 		case NORTH: location.y--; break;
 		case WEST: location.x--; break;
 		case SOUTH: location.y++; break;
+	}
+	if(location.x == 34 and location.y == 19){
+		finished = true;
 	}
 }
 
@@ -66,7 +94,7 @@ void Racer::draw(SDL_Plotter& g){
 }
 
 
-Uint32 Racer::look(DIRECTION direction, SDL_Plotter& g){
+bool Racer::look(DIRECTION direction){
 	int startX = location.x * block + buffer + padding/2;
 	int startY = location.y * block + buffer + padding/2;
     Uint32 see;
@@ -78,11 +106,8 @@ Uint32 Racer::look(DIRECTION direction, SDL_Plotter& g){
 		case WEST:  startX -= (padding)/2; break;
     }
 
-	cout <<"x = " << startX  << " y = " <<startY << " ";
-	see = g.getColor(startX , startY);
-	g.plotPixel(startX , startY,255,25,25);
-
-	return see;
+	see = screen->getColor(startX , startY);
+	return !see;
 }
 
 void Racer::erase(SDL_Plotter& g){
@@ -99,13 +124,6 @@ void Racer::erase(SDL_Plotter& g){
 
 }
 
-/*
- *
-    const int block = 22;
-    const int buffer = 100;
-    const int padding = 6;
-    const int wallThickness = 3; // must be odd
- *
- */
 
 #endif /* RACER_H_ */
+

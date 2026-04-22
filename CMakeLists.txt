@@ -4,8 +4,12 @@ project(Algorithms_MazeRunner)
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(SDL2 REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 
-add_executable(Algorithms_MazeRunner main.cpp)
+add_executable(Algorithms_MazeRunner
+        BoothMain.cpp
+        SDL_Plotter.cpp)
 
 # Link SDL2 to your project
 target_link_libraries(Algorithms_MazeRunner PRIVATE SDL2::SDL2)
+target_link_libraries(Algorithms_MazeRunner PRIVATE SDL2_mixer::SDL2_mixer)
