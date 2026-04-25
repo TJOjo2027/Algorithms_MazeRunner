@@ -30,6 +30,11 @@ public:
 		return pool[rand() % pool.size()];
 	}
 
+	DIRECTION PacNextMove(){
+		
+
+	}
+
 };
 
 
