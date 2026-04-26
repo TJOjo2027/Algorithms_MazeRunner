@@ -38,6 +38,10 @@ public:
 
 	}
 
+	DIRECTION FloodFillNextMove(){
+		
+	}
+
 	DIRECTION nextMoveTeamOne() {
 		
 	}
