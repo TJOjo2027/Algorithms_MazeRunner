@@ -31,11 +31,15 @@ public:
 	}
 
 	DIRECTION DFSNextMove(){
-		int i;
+		
 	}
 
 	DIRECTION BFSNextMove(){
 
+	}
+
+	DIRECTION nextMoveTeamOne() {
+		
 	}
 
 };
