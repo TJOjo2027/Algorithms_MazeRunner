@@ -79,7 +79,7 @@ private:
 	bool isQueueInitialized = false;
 
 	// direction array for BFS
-	const DIRECTION directions[4] = {NORTH, SOUTH, EAST, WEST};
+	const DIRECTION directions[4] = {EAST, SOUTH, NORTH, WEST};
 
 
 public:
@@ -123,43 +123,65 @@ public:
 	}
 	
 	// TJ's BFS Next Move Implementation
+
+	void initializeBFS() {
+		point start = car->getLocation();
+		pointQueue.push(start);
+		parentMap[{start.x, start.y}] = {start, NORTH}; // dummy value to represent the start point
+		isQueueInitialized = true;
+	}
+
 	DIRECTION BFSNextMove() {
 		// initialize the point queue if this is the first BFS Run
 		if (!isQueueInitialized) {
-			point start = car->getLocation();
-			pointQueue.push(start);
-			parentMap[{start.x, start.y}] = {start, NORTH}; // dummy value to represent the start point
-			isQueueInitialized = true;
+			initializeBFS();
+		}
+
+		// case where queue is empty before looking for next move
+		if (pointQueue.empty()) {
+			return EAST;
 		}
 
 		// do a run of BFS, popping the front of the pointQueue and taking note of open spots
 		point currentPoint = pointQueue.front();
 		pointQueue.pop();
 
+		// set the racer's location to the location of the BFS actions and store the previous location for when its reset
+		point realLocation = car->getLocation();
+		car->setLocation(currentPoint);
+
 		const int DIRECTIONS = 4;
+
 		for (int i = 0; i < DIRECTIONS; i++) {
 			// case where the move is open
 			if (!car->look(directions[i])) {
 				// set nextPoint to currentPoint so we have a reference
-				point nextPoint = currentPoint;
+				point neighbor = currentPoint;
 				if (directions[i] == EAST) {
-					nextPoint.x++;
+					neighbor.x++;
 				} else if (directions[i] == SOUTH) {
-					nextPoint.y++;
+					neighbor.y++;
 				} else if (directions[i] == WEST) {
-					nextPoint.x--;
+					neighbor.x--;
 				} else if (directions[i] == NORTH) {
-					nextPoint.y--;
+					neighbor.y--;
 				}
 
 				// make sure we haven't already been to nextPoint
-				pair<int, int> nextPointPair = make_pair(nextPoint.x, nextPoint.y);
-				// case where we haven't been to nextPoint
-				if (parentMap.find(nextPointPair) == parentMap.end()) {
-					parentMap[nextPointPair] = {currentPoint, directions[i]};
-					pointQueue.push(nextPoint);
+				pair<int, int> neighborPair = make_pair(neighbor.x, neighbor.y);
+				// case where we haven't been to neighbor
+				if (parentMap.find(neighborPair) == parentMap.end()) {
+					parentMap[neighborPair] = {currentPoint, directions[i]};
+					pointQueue.push(neighbor);
 				}
 			}
+		}
+
+		car->setLocation(realLocation);
+
+		// case where queue is empty after looking for neighbors
+		if (pointQueue.empty()) {
+			return EAST;
 		}
 
 		// show the next move and return it
@@ -167,6 +189,21 @@ public:
 
 		// this gives the next direction to take
 		return parentMap[{nextPoint.x, nextPoint.y}].second;
+	}
+
+	// this is gievn that we keep track of the start and end points of the maze
+	vector<DIRECTION> reconstructPath(point start, point end) {
+		vector<DIRECTION> path;
+		point current = end;
+
+		while (!(current.x == start.x && current.y == start.y)) {
+			pair<point, DIRECTION> parent = parentMap[{current.x, current.y}];
+			path.push_back(parent.second);
+			current = parent.first;
+		}
+
+		reverse(path.begin(), path.end());
+		return path;
 	}
 
 	
