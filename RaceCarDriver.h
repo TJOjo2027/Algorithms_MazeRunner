@@ -122,20 +122,8 @@ public:
 
 	}
 	
-
+	// TJ's BFS Next Move Implementation
 	DIRECTION BFSNextMove() {
-
-	}
-
-	DIRECTION FloodFillNextMove() {
-		
-	}
-
-	DIRECTION nextMoveTeamOne() {
-		
-	}
-
-	DIRECTION BFSnextMove() {
 		// initialize the point queue if this is the first BFS Run
 		if (!isQueueInitialized) {
 			point start = car->getLocation();
@@ -180,6 +168,16 @@ public:
 		// this gives the next direction to take
 		return parentMap[{nextPoint.x, nextPoint.y}].second;
 	}
+
+	
+	DIRECTION FloodFillNextMove() {
+		
+	}
+
+	DIRECTION nextMoveTeamOne() {
+		
+	}
+
 };
 
 
