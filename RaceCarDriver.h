@@ -191,6 +191,21 @@ public:
 		return parentMap[{nextPoint.x, nextPoint.y}].second;
 	}
 
+	// this is gievn that we keep track of the start and end points of the maze
+	vector<DIRECTION> reconstructPath(point start, point end) {
+		vector<DIRECTION> path;
+		point current = end;
+
+		while (!(current.x == start.x && current.y == start.y)) {
+			pair<point, DIRECTION> parent = parentMap[{current.x, current.y}];
+			path.push_back(parent.second);
+			current = parent.first;
+		}
+
+		reverse(path.begin(), path.end());
+		return path;
+	}
+
 	
 	DIRECTION FloodFillNextMove() {
 		
