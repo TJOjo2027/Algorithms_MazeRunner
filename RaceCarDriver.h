@@ -23,8 +23,15 @@ private:
 	set<point> visited;
 
 	// Current direction of the car
-	DIRECTION currDir;
+	DIRECTION currDir = EAST;
 
+	// Helper functions for DFS implementation /////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void iterationBegin(){
+		currDir = EAST;
+	}
+
+	// Utilized for iterating through the current direction and returning the resulting point
 	point iterationCurrent(point currP) {
 		switch(currDir){
 			case EAST:  currP.x++; break;
@@ -35,6 +42,7 @@ private:
 		return currP;
 	}
 
+	// Utilzied for iterating through directions in a clockwise manner
 	void iterationAdvance(){
 		switch(currDir){
 			case EAST:  currDir = SOUTH; break;
@@ -44,6 +52,7 @@ private:
 		}
 	}
 
+	// Utilzied for backtracking when all directions have been iterated through in a counter-clockwise manner
 	void iterationRetreat(){
 		switch(currDir){
 			case EAST:  currDir = NORTH; break;
@@ -53,10 +62,11 @@ private:
 		}
 	}
 
-	bool iterationDone(DIRECTION trialDir, point location) const {
-		return trialDir >= 4;
+	// Check if the current direction has been fully iterated through
+	bool iterationDone(int count) const {
+		return count >= 4;
 	}
-
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public:
 	RaceCarDriver(Racer* p = nullptr): car{p}{}
@@ -84,8 +94,15 @@ public:
 		// Mark the current location as visited
 		visited.insert(currLoc);
 
-		DIRECTION nextDir;
-		for(int i = 0; i < 4; i++){
+		// Utilized to track that if all directions have been iterated through
+		int directionsTried = 0;
+
+		while (!iterationDone(directionsTried)) {
+			// Getting the neighboring point in the current direction
+			point neighbor = iterationCurrent(currLoc);
+
+			// 
+		}
 
 		
 
