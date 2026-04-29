@@ -89,7 +89,7 @@ public:
 
 
 	// Booth's Random Next Move Implementation
-	DIRECTION nextMove(){
+	DIRECTION RandomNextMove(){
 		vector<DIRECTION> pool;
 
 		if(!car->look(EAST))   pool.push_back(EAST);
@@ -106,9 +106,6 @@ public:
 		// Retrive the current location of the car
 		point currLoc = car->getLocation();
 
-		// Mark the current location as visited
-		visited.insert({currLoc.x, currLoc.y});
-
 		// Utilized to track that if all directions have been iterated through
 		int directionsTried = 0;
 
@@ -119,9 +116,14 @@ public:
 			// Check if the neighboring point is open and unvisited
 			if (!car->look(currDir) && visited.find({neighbor.x, neighbor.y}) == visited.end()) {
 				 DIRECTION moveDir = currDir; // Store the direction to move before modifying currDir
+
 				// If it is, push the current direction to the stack and return it
 				iterationBegin(); // Reset the current direction to EAST for the next iteration
-				dfsPath.push(moveDir);
+
+				// Mark the current location as visited
+				visited.insert({neighbor.x, neighbor.y});
+				
+				dfsPath.push(moveDir); // Push the direction to the stack before returning
 				return moveDir;
 			} 
 			
