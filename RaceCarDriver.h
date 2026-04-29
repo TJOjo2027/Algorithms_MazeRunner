@@ -121,7 +121,7 @@ public:
 				 DIRECTION moveDir = currDir; // Store the direction to move before modifying currDir
 				// If it is, push the current direction to the stack and return it
 				iterationBegin(); // Reset the current direction to EAST for the next iteration
-				dfsPath.push(moveDir);
+				dfsPath.push(moveDir); // Push the direction to the stack before returning
 				return moveDir;
 			} 
 			
