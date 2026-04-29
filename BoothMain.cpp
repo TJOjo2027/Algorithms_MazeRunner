@@ -9,6 +9,17 @@
 #include "RaceCarDriver.h"
 #include "constants.h"
 #include "timer.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cmath>
+#include <set>
+#include "DisJointSet.h"
+#include "SDL_Plotter.h"
+#include "Racer.h"
+#include "RaceCarDriver.h"
+#include "constants.h"
+#include "timer.h"
 using namespace std;
 
 void drawCircle(point loc, int size, color c, SDL_Plotter& g);
