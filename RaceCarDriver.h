@@ -22,7 +22,7 @@ private:
 	stack<DIRECTION> dfsPath;
 
 	// Using a set to track visited locations
-	set<point> visited;
+	set<pair<int,int>> visited;
 
 	// Current direction of the car
 	DIRECTION currDir = EAST;
@@ -55,13 +55,14 @@ private:
 	}
 
 	// Utilzied for backtracking when all directions have been iterated through in a counter-clockwise manner
-	void iterationRetreat(){
-		switch(currDir){
-			case EAST:  currDir = NORTH; break;
-			case SOUTH: currDir = EAST; break;
-			case WEST:  currDir = SOUTH; break;
-			case NORTH: currDir = WEST; break;
+	DIRECTION iterationFlipped(DIRECTION newDir){
+		switch(newDir){
+			case EAST:  newDir = WEST; break;
+			case SOUTH: newDir = NORTH; break;
+			case WEST:  newDir = EAST; break;
+			case NORTH: newDir = SOUTH; break;
 		}
+		return newDir;
 	}
 
 	// Check if the current direction has been fully iterated through
@@ -106,7 +107,7 @@ public:
 		point currLoc = car->getLocation();
 
 		// Mark the current location as visited
-		visited.insert(currLoc);
+		visited.insert({currLoc.x, currLoc.y});
 
 		// Utilized to track that if all directions have been iterated through
 		int directionsTried = 0;
@@ -115,8 +116,31 @@ public:
 			// Getting the neighboring point in the current direction
 			point neighbor = iterationCurrent(currLoc);
 
-			// 
+			// Check if the neighboring point is open and unvisited
+			if (!car->look(currDir) && visited.find({neighbor.x, neighbor.y}) == visited.end()) {
+				 DIRECTION moveDir = currDir; // Store the direction to move before modifying currDir
+				// If it is, push the current direction to the stack and return it
+				iterationBegin(); // Reset the current direction to EAST for the next iteration
+				dfsPath.push(moveDir);
+				return moveDir;
+			} 
+			
+			else {
+				// If it isn't, advance to the next direction and increment the directionsTried counter
+				iterationAdvance();
+				directionsTried++;
+			}
 		}
+
+		// If all directions have been tried, we need to backtrack
+		if (!dfsPath.empty()) {
+			DIRECTION backtrackDir = dfsPath.top();
+			dfsPath.pop();
+			return iterationFlipped(backtrackDir); // Return the direction to backtrack
+		}
+
+		// If the stack is empty, then we have backtracked all the way to the start and there are no more moves to make
+		return EAST; // Default return value (can be changed as needed)
 
 		
 
