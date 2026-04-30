@@ -11,6 +11,7 @@
 #include "Racer.h"
 #include <vector>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -149,7 +150,7 @@ public:
 	}
 	
 	// TJ's BFS Next Move Implementation
-
+    //TODO: Hannah - the BFS continues, even after finding the end and printing a time. how come?
 	void initializeBFS() {
 		point start = car->getLocation();
 		pointQueue.push(start);
@@ -166,10 +167,11 @@ public:
 		// case where queue is empty before looking for next move
 
 		// this case should never happen because the mazes have guaranteed solutions
-		if (pointQueue.empty()) {
+        //FIXME: I commented out bc it threw assert before end - H
+		/*if (pointQueue.empty()) {
 			assert(false);
 			return EAST;
-		}
+		}*/
 
 		// take note of the real location of the car
 		point realLocation = car->getLocation();
@@ -178,7 +180,18 @@ public:
 		pointQueue.pop();
 
 		// car is set to the current point so we can look around it and find its neighbors
-		car->setLocation(currentPoint);
+        cout << "about to teleport to: " << currentPoint.x << "," << currentPoint.y << endl; // cheking a print
+        car->setLocation(currentPoint);
+
+        //FIXME: H - the code is segfaulting for pixeling, think its looking too far (out of bounds) - check here:
+        if(currentPoint.x < 0 || currentPoint.y < 0 ||
+           currentPoint.x >= col || currentPoint.y >= row) {
+            cout << "within bounds!" << endl;
+            car->setLocation(realLocation);
+
+            cout << "realLocation: " << realLocation.x << "," << realLocation.y << endl;
+            cout << "queue size: " << pointQueue.size() << endl;
+        }
 
 		const int DIRECTIONS = 4;
 
@@ -186,7 +199,10 @@ public:
 			// case where the move is open
 			if (!car->look(directions[i])) {
 				// set nextPoint to currentPoint so we have a reference
-				point neighbor = currentPoint;
+
+                cout << "looking direction: " << directions[i] << endl; // print for checking
+
+                point neighbor = currentPoint;
 				if (directions[i] == EAST) {
 					neighbor.x++;
 				} else if (directions[i] == SOUTH) {
@@ -202,6 +218,9 @@ public:
 				// case where we haven't been to neighbor
 				if (parentMap.find(neighborPair) == parentMap.end()) {
 					parentMap[neighborPair] = {currentPoint, directions[i]};
+
+                    //FIXME: H - ensuring it doesnt push junk
+                    cout << "pushing neighbor: " << neighbor.x << "," << neighbor.y << endl;
 					pointQueue.push(neighbor);
 				}
 			}
@@ -217,11 +236,11 @@ public:
 		}
 
 		point nextPoint = pointQueue.front();
-		int displacementX = nextPoint.x - realLocation.x;
-		int displacementY = nextPoint.y - realLocation.y;
-		// based on the displacement, determine the direction to move
+		//int displacementX = nextPoint.x - realLocation.x;
+		//int displacementY = nextPoint.y - realLocation.y;
+		//based on the displacement, determine the direction to move
 		// if there are no points, skip it
-		if (displacementX == 1 && displacementY == 0) {
+		/*if (displacementX == 1 && displacementY == 0) {
 			return EAST;
 		}
 		else if (displacementX == -1 && displacementY == 0) {
@@ -236,8 +255,32 @@ public:
 		else {
 			pointQueue.pop();
 			return BFSNextMove();
-		}
+		} */
+
+        /**TODO: H - this loop is the same as your code above, just w/o the recursion piece:
+         * The recursive piece was causing a seg fault since bfs was trying to access and look
+         * at points too far in advance, and trying to call on those points - but they're null/out of bounds
+         * the for loop allows for checking, but only the adjacent points, that can be accessed w data
+         * are called on and used- or else skipped
+         * */
+
+        while (!pointQueue.empty()) {
+            point nextPoint = pointQueue.front();
+            int displacementX = nextPoint.x - realLocation.x;
+            int displacementY = nextPoint.y - realLocation.y;
+
+            if (displacementX == 1 && displacementY == 0) return EAST;
+            else if (displacementX == -1 && displacementY == 0) return WEST;
+            else if (displacementX == 0 && displacementY == 1) return SOUTH;
+            else if (displacementX == 0 && displacementY == -1) return NORTH;
+            else pointQueue.pop();
+        }
+
+        assert(false); // should never reach here
+        return EAST;
 	}
+
+
 
 	// this is gievn that we keep track of the start and end points of the maze
 	vector<DIRECTION> reconstructPath(point start, point end) {
