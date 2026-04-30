@@ -19,7 +19,7 @@ private:
 	Racer* car;
 
 	// Stack used to track taken by car
-	stack<DIRECTION> dfsPath;
+	stack<pair<DIRECTION, int>> dfsPath;
 
 	// Using a set to track visited locations
 	set<pair<int,int>> visited;
