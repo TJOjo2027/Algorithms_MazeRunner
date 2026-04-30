@@ -3,6 +3,8 @@
 #include <string>
 #include <cmath>
 #include <set>
+#include <stack>
+#include <cassert>
 #include "DisJointSet.h"
 #include "SDL_Plotter.h"
 #include "Racer.h"
@@ -44,9 +46,18 @@ void saveMaze(set<pair<int,int> >& walls, string fName){
 }
 
 void readMaze(set<pair<int,int> >& walls, string fName){
+    cout << "Maze loaded successfully------------" << endl;
+
 	int x,y;
 	walls.clear();
 	ifstream file{fName};
+
+    //peeking
+    string firstLine;
+    getline(file, firstLine);
+    cout << "First line: [" << firstLine << "]" << endl;
+    file.seekg(0); // reset back to start
+
 	while(file >> x >> y){
 		walls.insert(make_pair(x,y));
 	}
@@ -83,10 +94,11 @@ int main(int argc, char ** argv)
 
 	srand(time(0));
 
-	//buildMaze(false, cells, walls, g);
-    //saveMaze(walls, "wallMaze3.txt");
+    // why are these commented out??
+	buildMaze(false, cells, walls, g);
+    saveMaze(walls, "C:/Users/Hannah_Ross1/Algorithms_MazeRunner/testFiles/open_right_5x5");
 
-    readMaze(walls, "wallMaze1.txt");
+    readMaze(walls, "C:/Users/Hannah_Ross1/Algorithms_MazeRunner/testFiles/open_right_5x5");
     //readMaze(walls, "wallMaze2.txt");
     //readMaze(walls, "wallMaze3.txt");
 
@@ -117,21 +129,23 @@ clock.reset();
 					case DOWN_ARROW:  robot.move(SOUTH); break;
 
 				}
-				robot.move(driver.nextMove());
+				robot.move(driver.BFSNextMove());  //FIXME: changed from .next move
 				legalMove(robot, walls);
 				robot.draw(g);
 				g.update();
-				//g.Sleep(500);
+				g.Sleep(200); //FIXME: commented
 
 			}
 
 			if(g.mouseClick()){
 			}
 
-			robot.move(driver.nextMove());
+			robot.move(driver.BFSNextMove()); //FIXME: changed from .nextMove
+            g.Sleep(200); //FIXME: commented
 			legalMove(robot, walls);
 			robot.draw(g);
 			g.update();
+            g.Sleep(200); //FIXME: commented
 		}
 		else{
 			if(robot.Finished()){
