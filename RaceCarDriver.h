@@ -164,16 +164,20 @@ public:
 		}
 
 		// case where queue is empty before looking for next move
+
+		// this case should never happen because the mazes have guaranteed solutions
 		if (pointQueue.empty()) {
+			assert(false);
 			return EAST;
 		}
 
-		// do a run of BFS, popping the front of the pointQueue and taking note of open spots
+		// take note of the real location of the car
+		point realLocation = car->getLocation();
+
 		point currentPoint = pointQueue.front();
 		pointQueue.pop();
 
-		// set the racer's location to the location of the BFS actions and store the previous location for when its reset
-		point realLocation = car->getLocation();
+		// car is set to the current point so we can look around it and find its neighbors
 		car->setLocation(currentPoint);
 
 		const int DIRECTIONS = 4;
@@ -203,18 +207,36 @@ public:
 			}
 		}
 
+		// set back to the real location of the car before returning the next move
 		car->setLocation(realLocation);
 
-		// case where queue is empty after looking for neighbors
+		// this case should never happen because the mazes have guaranteed solutions
 		if (pointQueue.empty()) {
+			assert(false);
 			return EAST;
 		}
 
-		// show the next move and return it
 		point nextPoint = pointQueue.front();
-
-		// this gives the next direction to take
-		return parentMap[{nextPoint.x, nextPoint.y}].second;
+		int displacementX = nextPoint.x - realLocation.x;
+		int displacementY = nextPoint.y - realLocation.y;
+		// based on the displacement, determine the direction to move
+		// if there are no points, skip it
+		if (displacementX == 1 && displacementY == 0) {
+			return EAST;
+		}
+		else if (displacementX == -1 && displacementY == 0) {
+			return WEST;
+		}
+		else if (displacementX == 0 && displacementY == 1) {
+			return SOUTH;
+		}
+		else if (displacementX == 0 && displacementY == -1) {
+			return NORTH;
+		}
+		else {
+			pointQueue.pop();
+			return BFSNextMove();
+		}
 	}
 
 	// this is gievn that we keep track of the start and end points of the maze
