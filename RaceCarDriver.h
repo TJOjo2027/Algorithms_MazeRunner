@@ -345,6 +345,54 @@ public:
 
 	
 	DIRECTION FloodFillNextMove() {
+		if (!isFlood) {
+			FloodFilling();
+			FloodFilliation(point(row-1, col-1), 0);
+			isFlood = true;
+		}
+
+		point currLoc = car->getLocation();
+
+		// Use iteration functions to discover walls.
+		iterationBegin();
+		int count = 0;
+
+		while (!iterationDone(count)) {
+			point neighbor = iterationCurrent(currLoc);
+
+			if (car->look(currDir) && walls.find({neighbor.x, neighbor.y}) == walls.end()) {
+				walls.insert({neighbor.x, neighbor.y});
+			}
+
+			iterationAdvance();
+			count++;
+		}
+
+		// Recompute the flood fill gird with new walls (if found)
+		if (!walls.empty()) {
+			FloodFilling();
+			FloodFilliation(point(row-1, col-1), 0);
+		}
+
+		iterationBegin();
+		DIRECTION bestDir = EAST;
+		int bestVal = -1;
+
+		while (!iterationDone(count)) {
+			point neighbor = iterationCurrent(currLoc);
+
+			if (!car->look(currDir) && fGrid[neighbor.y][neighbor.x] > bestVal) {
+				bestVal = fGrid[neighbor.y][neighbor.x];
+				bestDir = currDir;
+			}
+
+			iterationAdvance();
+			count++;
+		}
+
+		return bestDir;
+
+
 		
 	}
 
