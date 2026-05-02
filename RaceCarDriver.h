@@ -12,6 +12,8 @@
 #include <vector>
 #include <queue>
 #include <algorithm>
+#include <stack>
+#include <cassert>
 
 using namespace std;
 
@@ -27,6 +29,50 @@ private:
 
 	// Current direction of the car
 	DIRECTION currDir = EAST;
+
+	// Grid used for Flood Fill implementation.
+	int fGrid[row][col];
+
+	// Boolean to track if flood has been initialized
+	bool isFlood = false;
+
+	// Utilized in stroing discovered walls.
+	set<pair<int,int>> walls;
+
+	// Helper functions for Flood Fill implementation /////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void FloodFilling() {
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				fGrid[i][j] = -1; // Initialize all cells to -1 to indicate unvisited
+			}
+		}
+
+		fGrid[row-1][col-1] = 0; // Start from the end point of the maze
+	}
+
+	void FloodFilliation(point curr, int dist) {
+		// Checking if the path is visisted and/or of equal distance.
+		// Exit if so.
+		if (fGrid[curr.y][curr.x] != -1 && fGrid[curr.y][curr.x] <= dist) {
+			return;
+		}
+
+		// Procedure to skip walls
+		if (walls.find({curr.x, curr.y}) != walls.end()) {
+			return;
+	    }
+
+		// Intialize the distance
+		fGrid[curr.y][curr.x] = dist;
+
+		// Recursively fill all 4 neighbors with distance + 1
+		FloodFilliation({curr.x + 1, curr.y}, dist + 1); // EAST
+		FloodFilliation({curr.x - 1, curr.y}, dist + 1); // WEST	
+		FloodFilliation({curr.x, curr.y + 1}, dist + 1); // SOUTH
+		FloodFilliation({curr.x, curr.y - 1}, dist + 1); // NORTH
+	}
+
 
 	// Helper functions for DFS implementation /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -299,6 +345,54 @@ public:
 
 	
 	DIRECTION FloodFillNextMove() {
+		if (!isFlood) {
+			FloodFilling();
+			FloodFilliation(point(row-1, col-1), 0);
+			isFlood = true;
+		}
+
+		point currLoc = car->getLocation();
+
+		// Use iteration functions to discover walls.
+		iterationBegin();
+		int count = 0;
+
+		while (!iterationDone(count)) {
+			point neighbor = iterationCurrent(currLoc);
+
+			if (car->look(currDir) && walls.find({neighbor.x, neighbor.y}) == walls.end()) {
+				walls.insert({neighbor.x, neighbor.y});
+			}
+
+			iterationAdvance();
+			count++;
+		}
+
+		// Recompute the flood fill gird with new walls (if found)
+		if (!walls.empty()) {
+			FloodFilling();
+			FloodFilliation(point(row-1, col-1), 0);
+		}
+
+		iterationBegin();
+		DIRECTION bestDir = EAST;
+		int bestVal = -1;
+
+		while (!iterationDone(count)) {
+			point neighbor = iterationCurrent(currLoc);
+
+			if (!car->look(currDir) && fGrid[neighbor.y][neighbor.x] > bestVal) {
+				bestVal = fGrid[neighbor.y][neighbor.x];
+				bestDir = currDir;
+			}
+
+			iterationAdvance();
+			count++;
+		}
+
+		return bestDir;
+
+
 		
 	}
 
