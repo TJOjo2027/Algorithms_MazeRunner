@@ -347,7 +347,7 @@ public:
 	DIRECTION FloodFillNextMove() {
 		if (!isFlood) {
 			FloodFilling();
-			FloodFilliation(point(row-1, col-1), 0);
+			FloodFilliation(point(col-1, row-1), 0);
 			isFlood = true;
 		}
 
@@ -356,12 +356,14 @@ public:
 		// Use iteration functions to discover walls.
 		iterationBegin();
 		int count = 0;
+		bool newWalls = false;
 
 		while (!iterationDone(count)) {
 			point neighbor = iterationCurrent(currLoc);
 
 			if (car->look(currDir) && walls.find({neighbor.x, neighbor.y}) == walls.end()) {
 				walls.insert({neighbor.x, neighbor.y});
+				newWalls = true;
 			}
 
 			iterationAdvance();
@@ -369,19 +371,21 @@ public:
 		}
 
 		// Recompute the flood fill gird with new walls (if found)
-		if (!walls.empty()) {
+		if (newWalls) {
 			FloodFilling();
-			FloodFilliation(point(row-1, col-1), 0);
+			FloodFilliation(point(col-1, row-1), 0);
 		}
 
 		iterationBegin();
+		count = 0;
 		DIRECTION bestDir = EAST;
 		int bestVal = -1;
 
 		while (!iterationDone(count)) {
 			point neighbor = iterationCurrent(currLoc);
 
-			if (!car->look(currDir) && fGrid[neighbor.y][neighbor.x] > bestVal) {
+			if (!car->look(currDir) && fGrid[neighbor.y][neighbor.x] != -1 && 
+			(bestVal == -1 || fGrid[neighbor.y][neighbor.x] < bestVal)) {
 				bestVal = fGrid[neighbor.y][neighbor.x];
 				bestDir = currDir;
 			}
@@ -391,9 +395,6 @@ public:
 		}
 
 		return bestDir;
-
-
-		
 	}
 
 	DIRECTION nextMoveTeamOne() {
