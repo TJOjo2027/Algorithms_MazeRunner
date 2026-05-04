@@ -38,10 +38,18 @@
 
 using namespace std;
 
+// description: initialize iteration direction to start (EAST)
+// return: void
+// precondition: currDir is defined
+// postcondition: currDir is set to EAST
 void iterationBegin(){
     currDir = EAST;
 }
 
+// description: compute next point based on current direction
+// return: point
+// precondition: currP is a valid point, currDir is set
+// postcondition: returns updated point after moving one step
 // Utilized for iterating through the current direction and returning the resulting point
 point iterationCurrent(point currP) {
     switch(currDir){
