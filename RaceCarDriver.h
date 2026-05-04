@@ -35,6 +35,7 @@ private:
 
 	// Boolean to track if flood has been initialized
 	bool isFlood = false;
+    set<pair<int,int>> floodVisited; // for making sure there is no oscillation w walls - H
 
 	// Utilized in stroing discovered walls.
 	set<pair<int,int>> walls;
@@ -53,13 +54,13 @@ private:
 
 	void FloodFilliation(point curr, int dist) {
 		// Checking if the path is visisted and/or of equal distance.
-		// Exit if so.
+		/*Exit if so.
 		if (fGrid[curr.y][curr.x] != -1 && fGrid[curr.y][curr.x] <= dist) {
 			return;
 		}
 
 		// Procedure to skip walls
-		if (walls.find({curr.x, curr.y}) != walls.end()) {
+		if (walls.find({curr.x, curr.y}) == walls.end()) {
 			return;
 	    }
 
@@ -70,8 +71,57 @@ private:
 		FloodFilliation({curr.x + 1, curr.y}, dist + 1); // EAST
 		FloodFilliation({curr.x - 1, curr.y}, dist + 1); // WEST	
 		FloodFilliation({curr.x, curr.y + 1}, dist + 1); // SOUTH
-		FloodFilliation({curr.x, curr.y - 1}, dist + 1); // NORTH
-	}
+		FloodFilliation({curr.x, curr.y - 1}, dist + 1); // NORTH*/
+
+        // FIXME: H - Recursion error with 35x20, make iterative instead?
+        cout << "Running at " << row << " by col " << col << endl;
+        queue<pair<point, int>> queue;
+        queue.push({curr, dist});
+        cout << "starting " << (col-1) << ", " << (row-1) << endl;
+        fGrid[curr.y][curr.x] = dist; // end point = 0
+
+        while(!queue.empty()) { // processing one cell at a time
+            point c = queue.front().first;
+            int d = queue.front().second; // find distance
+            queue.pop(); // remove from queue
+
+            point neighbors[4];
+            neighbors[0].x = c.x+1 ; neighbors[0].y = c.y;
+            neighbors[1].x = c.x-1 ; neighbors[1].y = c.y;
+            neighbors[2].x = c.x ; neighbors[2].y = c.y+1;
+            neighbors[3].x = c.x ; neighbors[3].y = c.y-1;
+
+            for(int i = 0; i < 4; i++){
+                point neighbor = neighbors[i];
+
+                cout << "CHecking Bonuds : " << neighbor.x << " " << neighbor.y <<
+                " " << "Size: " << col << "x " << row << endl;
+                if (neighbor.x < 0 || neighbor.x >= col ||
+                    neighbor.y < 0 || neighbor.y >= row) {
+                    cout << "out of bounds, skipping" << endl;
+                    continue;
+                }
+                cout << "in bounds: " << neighbor.x << "," << neighbor.y << endl;
+                cout << "about to check fGrid" << endl;
+                fGrid[neighbor.y][neighbor.x]; // just read it, don't write
+                cout << "fGrid ok" << endl;
+
+                if(car->look(currDir)){ continue;} // skip if a wall
+                cout << "After wall!" <<endl;
+
+                if(fGrid[neighbor.y][neighbor.x] != -1) { continue; } // skip if alr visited
+                cout << "visited alr? " << endl;
+
+                cout << "Made it through? " << neighbor.x << " " << neighbor.y << endl;
+
+                fGrid[neighbor.y][neighbor.x] = d+1; // assign distance and make pair
+                queue.push(make_pair(neighbor, d+1));
+            }
+
+        };
+
+
+    }
 
 
 	// Helper functions for DFS implementation /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,7 +327,7 @@ public:
 
 		// this case should never happen because the mazes have guaranteed solutions
 		if (pointQueue.empty()) {
-			assert(false);
+			//assert(false); // H - remove assert? whys that there
 			return EAST;
 		}
 
@@ -322,7 +372,7 @@ public:
             else pointQueue.pop();
         }
 
-        assert(false); // should never reach here
+        //assert(false); // should never reach here - so why is itt here
         return EAST;
 	}
 
@@ -346,11 +396,19 @@ public:
 	
 	DIRECTION FloodFillNextMove() {
 		if (!isFlood) {
+            point realLocation = car->getLocation(); // location of the car before jumping
 			FloodFilling();
 			FloodFilliation(point(col-1, row-1), 0);
+            car->setLocation(realLocation);
 			isFlood = true;
-		}
 
+            for(int i = 0; i < row; i++){
+                for(int j = 0; j < col; j++){
+                    cout << fGrid[i][j] << "\t";
+                }
+                cout << endl;
+            }
+		}
 		point currLoc = car->getLocation();
 
 		// Use iteration functions to discover walls.
@@ -358,7 +416,7 @@ public:
 		int count = 0;
 		bool newWalls = false;
 
-		while (!iterationDone(count)) {
+		/*while (!iterationDone(count)) {
 			point neighbor = iterationCurrent(currLoc);
 
 			if (car->look(currDir) && walls.find({neighbor.x, neighbor.y}) == walls.end()) {
@@ -374,23 +432,38 @@ public:
 		if (newWalls) {
 			FloodFilling();
 			FloodFilliation(point(col-1, row-1), 0);
-		}
+		}*/
 
 		iterationBegin();
 		count = 0;
 		DIRECTION bestDir = EAST;
 		int bestVal = -1;
+        //set<pair<int, int>> floodVisited;
+        floodVisited.insert(make_pair(currLoc.x, currLoc.y));
 
 		while (!iterationDone(count)) {
 			point neighbor = iterationCurrent(currLoc);
 
-			if (!car->look(currDir) && fGrid[neighbor.y][neighbor.x] != -1 && 
-			(bestVal == -1 || fGrid[neighbor.y][neighbor.x] < bestVal)) {
+			if (!car->look(currDir) && fGrid[neighbor.y][neighbor.x] != -1 &&
+                    floodVisited.find(make_pair(neighbor.x, neighbor.y)) == floodVisited.end() &&
+			        (bestVal == -1 || fGrid[neighbor.y][neighbor.x] < bestVal)) {
+                //cout << "points " << neighbor.x << " " << neighbor.y << endl;
+                //cout << "fGrid[4]1] " << fGrid[1][4] << endl;
 				bestVal = fGrid[neighbor.y][neighbor.x];
 				bestDir = currDir;
+
+                cout << "4 1 Neighbors: " << endl;
+                cout << "EAST " << (5 < col ? reinterpret_cast<int>(fGrid[1, 5]) : -99) << endl;
+                //cout << " EAST lookig " << car->look(EAST);
+                cout << "WEST " << fGrid[1][3] << endl;
+                //cout << " W lookig " << car->look(WEST);
+                cout << "SOUTH " << fGrid[2][4] << endl;
+                //cout << " S lookig " << car->look(SOUTH);
+                cout << "NORTH " << fGrid[0][4] << endl;
+               // cout << " N lookig " << car->look(NORTH);
 			}
 
-			iterationAdvance();
+            iterationAdvance();
 			count++;
 		}
 
