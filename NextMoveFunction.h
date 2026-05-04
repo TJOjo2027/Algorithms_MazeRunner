@@ -79,7 +79,7 @@ bool iterationDone(int count) const {
     return count >= 4;
 }
 
-DIRECTION DFSNextMove() {
+DIRECTION nextMoveTeamOne() {
 
     // Retrive the current location of the car
     point currLoc = car->getLocation();
